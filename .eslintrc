@@ -1,0 +1,57 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": ["plugin:@typescript-eslint/recommended", "prettier"],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "import", "prettier"],
+  "rules": {
+    // Override recommended rule -- allow object as a type
+    "@typescript-eslint/ban-types": "off",
+    // Override recommended rule -- explicit return types are unnecessary
+    "@typescript-eslint/explicit-function-return-type": "off",
+    // Override recommended rule -- we are not ready to commit to this
+    "@typescript-eslint/no-explicit-any": "off",
+    // Override recommended rule -- it's preferred to be explicit about types
+    "@typescript-eslint/no-inferrable-types": "off",
+    // Override recommended rule -- we utilize non-null assertions
+    "@typescript-eslint/no-non-null-assertion": "off",
+    // Override recommended rule -- allow for variables starting with `_` to be
+    //   unused. This is how we typically convey an unused variable.
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "import/no-default-export": "error",
+    "import/order": [
+      "warn",
+      {
+        "groups": ["external", "internal"],
+        "pathGroups": [
+          {
+            "group": "external",
+            "pattern": "^(@|\\w)"
+          },
+          {
+            "group": "internal",
+            "pattern": "^\\.\\."
+          }
+        ]
+      }
+    ],
+    // Reduce prettier violations to `warn` level
+    "prettier/prettier": "warn"
+  }
+}
