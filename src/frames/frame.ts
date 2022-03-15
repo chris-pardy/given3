@@ -1,5 +1,5 @@
 export interface Frame<T> {
-  previousFrame: Frame<T>;
-  get(): T;
+  get(register: (value: T) => void): T;
   release(): Promise<void>;
+  onRegister(value: T): void;
 }

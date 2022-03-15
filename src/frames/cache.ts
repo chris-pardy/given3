@@ -4,11 +4,11 @@ export class CacheFrame<T> extends DefineFrame<T> {
   #cache?: T = undefined;
   #isCached: boolean = false;
 
-  get(): T {
+  get(register: (value: T) => void): T {
     if (this.#isCached) {
       return this.#cache!;
     }
-    const v = super.get();
+    const v = super.get(register);
     this.#cache = v;
     this.#isCached = true;
     return v;

@@ -1,20 +1,18 @@
 import type { Frame } from './frame';
-import { emptyFrame } from './empty';
-import type { Destructor } from '../given';
+import type { Destructor, Given } from '../given';
 
 export class CleanUpFrame<T> implements Frame<T> {
+  readonly #given: Given<T>;
   readonly #destructor: Destructor<T>;
   readonly #cleanUpValues: T[] = [];
-  public previousFrame: Frame<T> = emptyFrame;
 
-  constructor(destructor: Destructor<T>) {
+  constructor(given: Given<T>, destructor: Destructor<T>) {
+    this.#given = given;
     this.#destructor = destructor;
   }
 
-  get(): T {
-    const v = this.previousFrame.get();
-    this.#cleanUpValues.push(v);
-    return v;
+  get(_register: (value: T) => void): T {
+    return this.#given.value;
   }
 
   async release(): Promise<void> {
@@ -22,5 +20,9 @@ export class CleanUpFrame<T> implements Frame<T> {
       await this.#destructor(value);
     }
     this.#cleanUpValues.splice(0, this.#cleanUpValues.length);
+  }
+
+  onRegister(value: T): void {
+    this.#cleanUpValues.push(value);
   }
 }

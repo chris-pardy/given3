@@ -81,4 +81,23 @@ describe('cleanup', () => {
       expect(destructor.value).toHaveBeenCalledWith(0);
     });
   });
+
+  describe('given the cleanup is defined before the value', () => {
+    tests.define(() =>
+      jestLike(({ given }) => {
+        describe('given a value', () => {
+          const g = given<number>().cleanUp(destructor.value);
+          describe('given the value is defined', () => {
+            g.define(constructor.value);
+            it('accesses the value', () => {
+              g.value;
+            });
+          });
+        });
+      })
+    );
+    it('the destructor is still called with the value', () => {
+      expect(destructor.value).toHaveBeenCalledWith(0);
+    });
+  });
 });
