@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "esNext",
+    "module": "commonjs",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "paths": {
+      "given3": ["src/index.ts"],
+      "*": ["node_modules/*", "types/*"]
+    }
+  },
+  "include": ["./src/**/*.ts", "src/__tests__/features"]
+}
