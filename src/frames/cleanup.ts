@@ -1,18 +1,18 @@
 import type { Frame } from './frame';
-import { emptyFrame } from './empty';
-import type { Destructor } from '../given';
+import type { Destructor, Given } from '../given';
 
 export class CleanUpFrame<T> implements Frame<T> {
+  readonly #given: Given<T>;
   readonly #destructor: Destructor<T>;
   readonly #cleanUpValues: T[] = [];
-  public previousFrame: Frame<T> = emptyFrame;
 
-  constructor(destructor: Destructor<T>) {
+  constructor(given: Given<T>, destructor: Destructor<T>) {
+    this.#given = given;
     this.#destructor = destructor;
   }
 
   get(): T {
-    const v = this.previousFrame.get();
+    const v = this.#given.value;
     this.#cleanUpValues.push(v);
     return v;
   }
