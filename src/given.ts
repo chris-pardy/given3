@@ -69,6 +69,12 @@ export class GivenImpl<T> implements Given<T> {
   #currentFrameIndex: number = -1;
   #computing: boolean = false;
 
+  #registerAll(value: T): void {
+    for (const frame of this.#frameStack) {
+      frame.onRegister(value);
+    }
+  }
+
   get value(): T {
     // check for re-entrancy
     if (this.#computing && givenStack[0] !== this) {
@@ -80,7 +86,7 @@ export class GivenImpl<T> implements Given<T> {
     this.#computing = true;
     this.#currentFrameIndex++;
     try {
-      return this.#frameStack[this.#currentFrameIndex].get();
+      return this.#frameStack[this.#currentFrameIndex].get(this.#registerAll.bind(this));
     } finally {
       this.#currentFrameIndex--;
       givenStack.shift();
@@ -95,7 +101,7 @@ export class GivenImpl<T> implements Given<T> {
     if (immediate) {
       beforeTest(() => {
         // seed the cache
-        frame.get();
+        frame.get(this.#registerAll.bind(this));
       });
     }
     if (scope === 'Each') {

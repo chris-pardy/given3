@@ -11,10 +11,8 @@ export class CleanUpFrame<T> implements Frame<T> {
     this.#destructor = destructor;
   }
 
-  get(): T {
-    const v = this.#given.value;
-    this.#cleanUpValues.push(v);
-    return v;
+  get(_register: (value: T) => void): T {
+    return this.#given.value;
   }
 
   async release(): Promise<void> {
@@ -22,5 +20,9 @@ export class CleanUpFrame<T> implements Frame<T> {
       await this.#destructor(value);
     }
     this.#cleanUpValues.splice(0, this.#cleanUpValues.length);
+  }
+
+  onRegister(value: T): void {
+    this.#cleanUpValues.push(value);
   }
 }

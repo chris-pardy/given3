@@ -1,13 +1,17 @@
-import { Frame } from './frame';
+import type { Frame } from './frame';
 import { NoDefinitionError } from '../errors';
 
 class EmptyFrame implements Frame<any> {
-  get(): any {
+  get(_register: (value: any) => void): any {
     throw new NoDefinitionError();
   }
 
   release(): Promise<void> {
     return Promise.resolve();
+  }
+
+  onRegister(_value: any): void {
+    return;
   }
 }
 
