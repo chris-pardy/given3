@@ -1,10 +1,10 @@
 import { given } from 'given3';
-import { jestLike } from '../__jest__';
+import { suite } from '../__runner__';
 
-describe('caching', () => {
+describe.each(['Jest', 'Mocha'] as const)('caching with %s runner', (mode) => {
   const constructor = given(() => jest.fn().mockReturnValue(0));
   const tests = given(() =>
-    jestLike(({ given }) => {
+    suite(mode, ({ given }) => {
       describe('given a value', () => {
         const g = given<number>();
         const itIsAccessed3Times = () =>

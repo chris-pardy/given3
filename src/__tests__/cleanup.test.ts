@@ -1,7 +1,7 @@
 import { given } from 'given3';
-import { jestLike } from '../__jest__';
+import { suite } from '../__runner__';
 
-describe('cleanup', () => {
+describe.each(['Jest', 'Mocha'] as const)('cleanup with %s runner', (mode) => {
   // simulate shared resource usage for instance in an integration test
   let resource = 0;
   const constructor = given(() => jest.fn(() => resource++));
@@ -11,7 +11,7 @@ describe('cleanup', () => {
     })
   );
   const tests = given(() =>
-    jestLike(({ given }) => {
+    suite(mode, ({ given }) => {
       describe('given a value', () => {
         const g = given<number>(constructor.value);
         const itAccessesTheValueIn3Tests = () =>
@@ -84,7 +84,7 @@ describe('cleanup', () => {
 
   describe('given the cleanup is defined before the value', () => {
     tests.define(() =>
-      jestLike(({ given }) => {
+      suite(mode, ({ given }) => {
         describe('given a value', () => {
           const g = given<number>().cleanUp(destructor.value);
           describe('given the value is defined', () => {

@@ -1,11 +1,11 @@
 import { given } from 'given3';
-import { jestLike } from '../__jest__';
+import { suite } from '../__runner__';
 
-describe('refinement', () => {
+describe.each(['Jest', 'Mocha'] as const)('refinement with %s runner', (mode) => {
   const constructor = given(() => jest.fn().mockReturnValue(0));
   const plusOne = given(() => jest.fn((v: number) => v + 1));
   const tests = given(() =>
-    jestLike(({ given }) => {
+    suite(mode, ({ given }) => {
       describe('given a value', () => {
         const g = given(constructor.value);
         const itIsAccessed = () =>
