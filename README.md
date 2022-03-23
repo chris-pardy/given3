@@ -8,6 +8,19 @@ Given3 is designed to work with Jest, Mocha, and Jasmine
 
 Install via NPM `npm install given3` or Yarn `yarn add given3`
 
+## Upgrading from given2
+
+In order to ease the process of upgrading from the given2 library (https://www.npmjs.com/package/given2) a compatibility layer is provided.
+Simply replace:
+```ts
+import given from 'given2';
+```
+
+with 
+```ts
+import { given2 as given } from 'given3';
+```
+
 ## Usage
 
 Use the given function `import { given } from 'given3';`
@@ -114,7 +127,7 @@ describe('Math.min', () => {
     });
     describe('given the input includes 0', () => {
       // further add to the input
-      input.define(() => [...input.define, 0]);
+      input.define(() => [...input.value, 0]);
       it('the result is 0', () => {
         expect(result.value).toBe(0);
       });
