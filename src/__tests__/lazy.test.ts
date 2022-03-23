@@ -1,10 +1,10 @@
 import { given } from 'given3';
 import { suite } from '../__runner__';
 
-describe('lazy', () => {
+describe.each(['Jest', 'Mocha'] as const)('lazy with %s runner', (mode) => {
   const constructor = given(() => jest.fn().mockReturnValue(0));
   const tests = given(() =>
-    suite('Jest', ({ given }) => {
+    suite(mode, ({ given }) => {
       describe('given a value', () => {
         const g = given<number>();
         const itIsNotAccessed = () => it('is not accessed', () => void 0);

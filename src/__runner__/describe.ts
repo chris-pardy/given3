@@ -31,19 +31,20 @@ export class Describe {
 
   #callbackToPromise(hook: HookFn): () => Promise<void> {
     if (hook.length === 1) {
-      return () => new Promise((res, rej) => {
-        try {
-          hook((err) => {
-            if (err) {
-              rej(err);
-            } else {
-              res();
-            }
-          })
-        } catch (err) {
-          rej(err);
-        }
-      })
+      return () =>
+        new Promise((res, rej) => {
+          try {
+            hook((err) => {
+              if (err) {
+                rej(err);
+              } else {
+                res();
+              }
+            });
+          } catch (err) {
+            rej(err);
+          }
+        });
     } else {
       return async () => {
         const result = hook();
@@ -52,7 +53,7 @@ export class Describe {
           await result;
         }
         return;
-      }
+      };
     }
   }
 
@@ -107,7 +108,7 @@ export class Describe {
   }
 
   beforeAll(before: HookFn): void {
-      this.#beforeAll.push(this.#callbackToPromise(before));
+    this.#beforeAll.push(this.#callbackToPromise(before));
   }
 
   beforeEach(before: HookFn): void {

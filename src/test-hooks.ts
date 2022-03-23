@@ -1,28 +1,35 @@
+const asyncToCallback =
+  (asyncFn: () => Promise<void>) =>
+  (done: (err?: unknown) => void): void => {
+    try {
+      asyncFn().then(
+        () => done(),
+        (err) => done(err)
+      );
+    } catch (err) {
+      done(err);
+    }
+  };
+
 // Global afterEach runs after every test and gives us a place to handling any cleanUps that are defined inside a test.
 const afterTestStack: (() => Promise<void>)[] = [];
-afterEach(async () => {
-  // take all the items from the stack from front to back.
-  for (let cleanup = afterTestStack.shift(); cleanup; cleanup = afterTestStack.shift()) {
-    try {
-      await cleanup();
-    } catch (err) {
-      console.error(err);
+afterEach(
+  asyncToCallback(async () => {
+    // take all the items from the stack from front to back.
+    for (let cleanup = afterTestStack.shift(); cleanup; cleanup = afterTestStack.shift()) {
+      try {
+        await cleanup();
+      } catch (err) {
+        console.error(err);
+      }
     }
-  }
-});
+  })
+);
 
 /**
- * We need to track if we're inside a test do that with a global beforeAll and afterAll
+ * We need to track if we're inside a test
  */
 let isIt = false;
-
-beforeAll(() => {
-  isIt = true;
-});
-
-afterAll(() => {
-  isIt = false;
-});
 
 /** run the init function before a tests, beforeEach */
 export const beforeTest = (init: () => void): void => {
@@ -40,7 +47,7 @@ export const afterTest = (cleanup: () => Promise<void>): void => {
   if (isIt) {
     afterTestStack.unshift(cleanup);
   } else {
-    afterEach(cleanup);
+    afterEach(asyncToCallback(cleanup));
   }
 };
 
@@ -54,6 +61,10 @@ export const begin = (setup: () => void): void => {
   if (isIt) {
     setup();
   } else {
+    if (typeof before === 'function') {
+      before(setup);
+      return;
+    }
     beforeAll(setup);
   }
 };
@@ -66,6 +77,19 @@ export const end = (teardown: () => Promise<void>): void => {
   if (isIt) {
     afterTestStack.unshift(teardown);
   } else {
+    if (typeof after === 'function') {
+      after(asyncToCallback(teardown));
+      return;
+    }
     afterAll(teardown);
   }
 };
+
+// A Global beforeAll block will be run to indicate that we're inside a test.
+begin(() => {
+  isIt = true;
+});
+
+end(async () => {
+  isIt = false;
+});

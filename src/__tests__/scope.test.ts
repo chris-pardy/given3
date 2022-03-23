@@ -1,7 +1,7 @@
 import { given } from 'given3';
 import { suite, TestRunner } from '../__runner__';
 
-describe('scoping rules', () => {
+describe.each(['Jest', 'Mocha'] as const)('scoping rules with %s runner', (mode) => {
   const tests = given<TestRunner>();
 
   beforeEach(async () => {
@@ -14,7 +14,7 @@ describe('scoping rules', () => {
     const constructorThree = given(() => jest.fn().mockReturnValue(2));
 
     tests.define(() =>
-      suite('Jest', ({ given }) => {
+      suite(mode, ({ given }) => {
         describe('given a value', () => {
           const g = given(constructorOne.value);
           describe('given a different value', () => {
@@ -48,7 +48,7 @@ describe('scoping rules', () => {
     const destructor = given(() => jest.fn());
 
     tests.define(() =>
-      suite('Jest', ({ given }) => {
+      suite(mode, ({ given }) => {
         describe('given a value', () => {
           const g = given<number>();
           describe('given the each cache scope', () => {

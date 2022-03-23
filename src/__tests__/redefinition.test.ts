@@ -1,11 +1,11 @@
 import { given } from 'given3';
 import { suite } from '../__runner__';
 
-describe('redefinition', () => {
+describe.each(['Jest', 'Mocha'] as const)('redefinition with %s runner', (mode) => {
   const initialConstructor = given(() => jest.fn().mockReturnValue(0));
   const subsequentConstructor = given(() => jest.fn().mockReturnValue(1));
   const tests = given(() =>
-    suite('Jest', ({ given }) => {
+    suite(mode, ({ given }) => {
       describe('given a value', () => {
         const g = given<number>(initialConstructor.value);
         it('accesses the initial value', () => {

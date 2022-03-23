@@ -2,7 +2,7 @@
 
 Given3 makes the process of testing better by allowing you to define lazily computed values that are scoped to individual tests or suites.
 
-Given3 is designed to work with Jest, using it with other test frameworks is not supported.
+Given3 is designed to work with Jest, Mocha, and Jasmine
 
 ## installation
 
