@@ -1,4 +1,4 @@
-import { given } from 'given3';
+import { given, using } from 'given3';
 import { suite } from '../__runner__';
 
 describe.each(['Jest', 'Mocha'] as const)('lazy with %s runner', (mode) => {
@@ -25,9 +25,8 @@ describe.each(['Jest', 'Mocha'] as const)('lazy with %s runner', (mode) => {
     })
   );
 
-  beforeEach(async () => {
-    await tests.value.run();
-  });
+  const testRun = given(() => tests.value.run());
+  using(testRun);
 
   describe('given the value is not accessed', () => {
     tests.define(() => tests.value.filter('is not accessed'));

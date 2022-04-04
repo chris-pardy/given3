@@ -41,6 +41,19 @@ export const beforeTest = (init: () => void): void => {
 };
 
 /**
+ * Run the init function before a test, beforeEach, if we're already
+ * in the test run then throw an error. as calling this function will
+ * fail.
+ */
+export const beforeTestAsync = (init: () => Promise<void>): void => {
+  if (isIt) {
+    throw new Error();
+  } else {
+    beforeEach(asyncToCallback(init));
+  }
+};
+
+/**
  * run the cleanup task after the test, use the afterTest stack to queue the task if we're in a test
  */
 export const afterTest = (cleanup: () => Promise<void>): void => {

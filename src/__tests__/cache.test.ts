@@ -1,4 +1,4 @@
-import { given } from 'given3';
+import { given, using } from 'given3';
 import { suite } from '../__runner__';
 
 describe.each(['Jest', 'Mocha'] as const)('caching with %s runner', (mode) => {
@@ -45,10 +45,9 @@ describe.each(['Jest', 'Mocha'] as const)('caching with %s runner', (mode) => {
     })
   );
 
-  // run the tests jest like tests before the test
-  beforeEach(async () => {
-    await tests.value.run();
-  });
+  const testRun = given(() => tests.value.run());
+
+  using(testRun);
 
   describe('given the value is accessed 3 times', () => {
     tests.define(() => tests.value.filter('is accessed 3 times'));
