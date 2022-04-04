@@ -1,4 +1,4 @@
-import { given } from 'given3';
+import { given, using } from 'given3';
 import { suite } from '../__runner__';
 
 describe.each(['Jest', 'Mocha'] as const)('redefinition with %s runner', (mode) => {
@@ -24,9 +24,10 @@ describe.each(['Jest', 'Mocha'] as const)('redefinition with %s runner', (mode) 
       });
     })
   );
-  beforeEach(async () => {
-    await tests.value.run();
-  });
+
+  const testRun = given(() => tests.value.run());
+  using(testRun);
+
   describe('given the value is not redefined', () => {
     tests.define(() => tests.value.filter('initial value'));
     it('the initial constructor is called', () => {

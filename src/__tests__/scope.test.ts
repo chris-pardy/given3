@@ -1,12 +1,11 @@
-import { given } from 'given3';
+import { given, using } from 'given3';
 import { suite, TestRunner } from '../__runner__';
 
 describe.each(['Jest', 'Mocha'] as const)('scoping rules with %s runner', (mode) => {
   const tests = given<TestRunner>();
+  const testRun = given(() => tests.value.run());
 
-  beforeEach(async () => {
-    await tests.value.run();
-  });
+  using(testRun);
 
   describe('define scoping', () => {
     const constructorOne = given(() => jest.fn().mockReturnValue(0));

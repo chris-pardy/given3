@@ -1,4 +1,4 @@
-import { given } from 'given3';
+import { given, using } from 'given3';
 import { suite } from '../__runner__';
 
 describe.each(['Jest', 'Mocha'] as const)('refinement with %s runner', (mode) => {
@@ -27,9 +27,8 @@ describe.each(['Jest', 'Mocha'] as const)('refinement with %s runner', (mode) =>
     })
   );
 
-  beforeEach(async () => {
-    await tests.value.run();
-  });
+  const testRun = given(() => tests.value.run());
+  using(testRun);
 
   describe.each([0, 1, 2])('given %s refinements', (refinements) => {
     tests.define(() => tests.value.filter(`given ${refinements}`));

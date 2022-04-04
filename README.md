@@ -66,6 +66,24 @@ it('the value is zero', () => {
 });
 ```
 
+If you would like to ensure a value is resolved before every test in a test suite use the `using` method (`import { using } from 'given2';`).
+
+```ts
+const mockSetup = given(() => jest.mockReset());
+const spyOnConsole = given(() => jest.spyOn(console, 'error'));
+const mockedTimers = given(() => jest.useFakeTimers());
+
+describe('a test', () => {
+  // will run the functions defined above before tests.
+  using(mockSetup, spyOnConsole, mockedTimers); 
+  it('tests something with a timer', () => {
+    const result = doSomething();
+    jest.runAllTimers();
+    expect(result.key).toEqual(something);
+  })
+})
+```
+
 ## Examples
 
 ### An inputs and outputs

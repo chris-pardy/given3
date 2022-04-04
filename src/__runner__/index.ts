@@ -1,4 +1,4 @@
-import type { GivenConstructor, Given2 } from 'given3';
+import type { GivenConstructor, Given2, Using } from 'given3';
 import { Describe } from './describe';
 
 export interface TestRunner {
@@ -63,14 +63,18 @@ class JestLikeImpl implements TestRunner {
 
 export const suite = (
   mode: 'Jest' | 'Mocha',
-  block: (modules: { given: GivenConstructor; given2: Given2 }) => void
+  block: (modules: { given: GivenConstructor; given2: Given2; using: Using }) => void
 ): TestRunner => {
   const d = new Describe(undefined, [], [], [], [], [], mode);
   d.eval(() => {
     jest.resetModuleRegistry();
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { given, given2 } = require('given3') as { given: GivenConstructor; given2: Given2 };
-    block({ given, given2 });
+    const { given, given2, using } = require('given3') as {
+      given: GivenConstructor;
+      given2: Given2;
+      using: Using;
+    };
+    block({ given, given2, using });
   });
   return new JestLikeImpl(d);
 };

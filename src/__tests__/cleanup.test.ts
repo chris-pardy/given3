@@ -1,4 +1,4 @@
-import { given } from 'given3';
+import { given, using } from 'given3';
 import { suite } from '../__runner__';
 
 describe.each(['Jest', 'Mocha'] as const)('cleanup with %s runner', (mode) => {
@@ -42,10 +42,10 @@ describe.each(['Jest', 'Mocha'] as const)('cleanup with %s runner', (mode) => {
     })
   );
 
-  beforeEach(async () => {
-    resource = 0;
-    await tests.value.run();
-  });
+  const resetResource = given(() => (resource = 0));
+  const testRun = given(() => tests.value.run());
+
+  using(resetResource, testRun);
 
   describe('given destructor with all scope', () => {
     tests.define(() => tests.value.filter('all scope'));

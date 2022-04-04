@@ -1,4 +1,4 @@
-import { given, NoDefinitionError, LoopDetectionError } from 'given3';
+import { given, using, NoDefinitionError, LoopDetectionError, LifecycleError } from 'given3';
 
 describe('errors', () => {
   describe('no definition error', () => {
@@ -13,6 +13,12 @@ describe('errors', () => {
     loop1.define(() => loop2.value + 1);
     it('throws loop detection error if a loop is detected', () => {
       expect(() => loop1.value).toThrow(LoopDetectionError);
+    });
+  });
+  describe('lifecycle error', () => {
+    const value = given(() => 1);
+    it('throws a lifecycle error if using a given in a test', () => {
+      expect(() => using(value)).toThrow(LifecycleError);
     });
   });
 });
