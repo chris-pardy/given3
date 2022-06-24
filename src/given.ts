@@ -49,13 +49,23 @@ export interface Given<T> {
    * define a new value for the given
    * @param constructor the constructor to create the new value
    * @param options options specifying the behavior of the new value
-   * @returns the givin for method chaining.
+   * @returns the given for method chaining.
    */
   define(constructor: Constructor<T>, options?: GivenOptions): this;
+  /**
+   * refine the value for the given based on the previously defined value.
+   * The supplied refiner function may return a new / modified value or
+   * mutate the value in place and return void.
+   * @param refiner the function that mutates the previous value.
+   * @param options options specifying the behavior of the new value
+   * @returns the given for method chaining.
+   */
+  refine(refiner: (previousValue: T) => T | void, options?: GivenOptions): this;
   /**
    * define a cleanup operation for constructed values,
    * @param destructor the cleanup code
    * @param scope the scope to run the cleanup at, by default All scope will be used
+   * @returns the given for method chaining.
    */
   cleanUp(destructor: Destructor<T>, scope?: Scopes): this;
 }
@@ -121,6 +131,14 @@ export class GivenImpl<T> implements Given<T> {
     const frame = cache ? new CacheFrame(constructor) : new DefineFrame(constructor);
     this.#manageFrame(frame, cacheScope, immediate);
     return this;
+  }
+
+  refine(constructor: (previousValue: T) => T | void, options?: GivenOptions): this {
+    return this.define(() => {
+      const previousValue = this.value;
+      const nextValue = constructor(previousValue);
+      return nextValue !== undefined ? nextValue : previousValue;
+    }, options);
   }
 
   cleanUp(destructor: (value: T) => void | Promise<void>, scope: Scopes = 'All'): this {

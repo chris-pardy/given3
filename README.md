@@ -136,6 +136,31 @@ describe('Math.min', () => {
 });
 ```
 
+The `.refine` method is a more readable way of doing this
+
+```ts
+import { given } from 'given3';
+
+describe('Math.min', () => {
+  const input = given<number[]>(() => []);
+  const result = given(() => Math.min(...input.value));
+  describe('given the input includes 1', () => {
+    // define input as the previous value
+    input.refine((value) => [...value, 1]);
+    it('the result is 1', () => {
+      expect(result.value).toBe(1);
+    });
+    describe('given the input includes 0', () => {
+      // further add to the input
+      input.refine((value) => [...value, 0]);
+      it('the result is 0', () => {
+        expect(result.value).toBe(0);
+      });
+    });
+  });
+});
+```
+
 ### cleanup
 
 While we try to avoid side effects in our tests practically there are times when things may need to be cleaned up after our tests are run.
