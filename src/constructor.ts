@@ -1,4 +1,4 @@
-import type { Given, Constructor, GivenOptions } from './given';
+import type { Given, Constructor, GivenOptions } from './given-types';
 import { GivenImpl } from './given';
 
 export interface GivenConstructor {
