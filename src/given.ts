@@ -128,7 +128,8 @@ export class GivenImpl<T> implements Given<T> {
     constructor: () => T,
     { cache = true, cacheScope = 'Each', immediate = false }: GivenOptions = {}
   ): this {
-    const frame = cache ? new CacheFrame(constructor) : new DefineFrame(constructor);
+    const defineFrame = new DefineFrame(constructor);
+    const frame = cache ? new CacheFrame(defineFrame) : defineFrame;
     this.#manageFrame(frame, cacheScope, immediate);
     return this;
   }
