@@ -3,11 +3,7 @@ import type { Frame } from './frames';
 import type { Given, GivenOptions, Scopes } from './given-types';
 import { afterTest, beforeTest, begin, end } from './test-hooks';
 import { LoopDetectionError } from './errors';
-
-
-// global list of given objects representing
-// a stack of value calls, used for re-entrant handling.
-const givenStack: object[] = [];
+import { givenStack } from './given-stack';
 
 export class GivenImpl<T> implements Given<T> {
   readonly #frameStack: Frame<T>[] = [emptyFrame];
@@ -22,21 +18,21 @@ export class GivenImpl<T> implements Given<T> {
 
   get value(): T {
     // check for re-entrancy
-    if (this.#computing && givenStack[0] !== this) {
+    if (this.#computing && !givenStack.isCurrent(this)) {
       throw new LoopDetectionError();
     }
     // startup
-    givenStack.unshift(this);
-    const previousComputingValue = this.#computing;
-    this.#computing = true;
-    this.#currentFrameIndex++;
-    try {
-      return this.#frameStack[this.#currentFrameIndex].get(this.#registerAll.bind(this));
-    } finally {
-      this.#currentFrameIndex--;
-      givenStack.shift();
-      this.#computing = previousComputingValue;
-    }
+    return givenStack.within(this, () => {
+      const previousComputingValue = this.#computing;
+      this.#computing = true;
+      this.#currentFrameIndex++;
+      try {
+        return this.#frameStack[this.#currentFrameIndex].get(this.#registerAll.bind(this));
+      } finally {
+        this.#currentFrameIndex--;
+        this.#computing = previousComputingValue;
+      }
+    });
   }
 
   #manageFrame(frame: Frame<T>, scope: 'Each' | 'All', immediate: boolean): void {
