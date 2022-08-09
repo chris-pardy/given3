@@ -1,5 +1,5 @@
 import { given } from './constructor';
-import type { Constructor, Given, GivenOptions } from './given';
+import type { Constructor, Given, GivenOptions } from './given-types';
 import { afterTest, beforeTest } from './test-hooks';
 
 export interface Given2 {

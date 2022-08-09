@@ -202,10 +202,47 @@ If true the value will be computed and cached before the test is run.
 
 ### Cache
 
-Options: `boolean`
+Options: `boolean | 'smart'`
 Default: `true`
 
 If false no value will be cached on reads.
+If the value is smart then smart caching will be enabled.
+
+## Smart Caching
+
+When the cache argument is set to `'smart'` smart caching is enabled. A smart cached value will be evicted if any of the given values that are referenced in the definition have changed since the cached value was computed. As an example using an API: 
+
+```ts
+import { given } from 'given3';
+import { service } from '../service';
+
+describe('API Calls', () => {
+  // mark cacheScope as All to ensure that a consistent object is returned
+  // until the value is redefined.
+  const arguments = given(() => ({ id: '1234' }), { cacheScope: 'All' });
+  // smart cached value for the service response
+  const result = given(() => service.invoke(arguments.value), {
+    cacheScope: 'All',
+    cache: 'smart'
+  });
+
+  // service result will be re-used here because the cacheScope is All and arguments haven't changed
+  it('has a positive result', async () => {
+    await expect(result.value).resolves.toHaveProperty('status', 200);
+  });
+  it('has a response body', async () => {
+    await expect(result.value).resolve.toHaveProperty('body', expect.any(String));
+  });
+
+  describe('given a missing id', () => {
+    // override the value of arguments, trigger smart cache eviction of result.
+    arguments.define(() => ({ id: 'not-found' }));
+    it('has a missing result', async () => {
+      await expect(result.value).resolves.toHaveProperty('status', 404);
+    });
+  });
+});
+```
 
 ## Factories
 

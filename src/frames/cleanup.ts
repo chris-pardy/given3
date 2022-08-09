@@ -1,5 +1,5 @@
 import type { Frame } from './frame';
-import type { Destructor, Given } from '../given';
+import type { Destructor, Given } from '../given-types';
 
 export class CleanUpFrame<T> implements Frame<T> {
   readonly #given: Given<T>;
