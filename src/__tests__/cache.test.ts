@@ -88,4 +88,40 @@ describe.each(['Jest', 'Mocha'] as const)('caching with %s runner', (mode) => {
       expect(constructor.value).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('given a smart cache is used', () => {
+    tests.define(() =>
+      suite(mode, ({ given }) => {
+        describe('top-most scope with smart cache', () => {
+          const dependency = given(() => 2);
+          const plusOne = given(
+            constructor.value.mockImplementation(() => dependency.value + 1),
+            { cacheScope: 'All', cache: 'smart' }
+          );
+          it('same dependency value accesses once', () => {
+            plusOne.value;
+          });
+          it('same dependency value accesses again', () => {
+            plusOne.value;
+          });
+          it('new dependency value accesses again', () => {
+            dependency.define(() => 1);
+            plusOne.value;
+          });
+        });
+      })
+    );
+
+    describe('given the same dependency value', () => {
+      tests.refine((t) => t.filter('same dependency value'));
+      it('only invokes the constructor once', () => {
+        expect(constructor.value).toHaveBeenCalledTimes(1);
+      });
+    });
+    describe('given a new dependency value is used', () => {
+      it('invokes the constructor twice', () => {
+        expect(constructor.value).toHaveBeenCalledTimes(2);
+      });
+    });
+  });
 });

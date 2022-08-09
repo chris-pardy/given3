@@ -1,4 +1,4 @@
-import { DefineFrame, CleanUpFrame, CacheFrame, emptyFrame } from './frames';
+import { DefineFrame, CleanUpFrame, CacheFrame, emptyFrame, SmartCacheFrame } from './frames';
 import type { Frame } from './frames';
 import type { Given, GivenOptions, Scopes } from './given-types';
 import { afterTest, beforeTest, begin, end } from './test-hooks';
@@ -60,7 +60,11 @@ export class GivenImpl<T> implements Given<T> {
     { cache = true, cacheScope = 'Each', immediate = false }: GivenOptions = {}
   ): this {
     const defineFrame = new DefineFrame(constructor);
-    const frame = cache ? new CacheFrame(defineFrame) : defineFrame;
+    const frame = cache
+      ? cache === 'smart'
+        ? new SmartCacheFrame(this, defineFrame)
+        : new CacheFrame(defineFrame)
+      : defineFrame;
     this.#manageFrame(frame, cacheScope, immediate);
     return this;
   }

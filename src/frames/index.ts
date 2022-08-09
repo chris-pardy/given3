@@ -3,3 +3,4 @@ export * from './cleanup';
 export * from './define';
 export * from './frame';
 export * from './empty';
+export * from './smart-cache';
