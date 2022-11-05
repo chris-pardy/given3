@@ -1,28 +1,40 @@
-import type { Frame } from './frame';
+import { Frame } from './frame';
 import type { Destructor, Given } from '../given-types';
 
-export class CleanUpFrame<T> implements Frame<T> {
-  readonly #given: Given<T>;
+export class CleanUpFrame<T> extends Frame<T> {
   readonly #destructor: Destructor<T>;
-  readonly #cleanUpValues: T[] = [];
+  readonly #cleanUpValues: Set<T> = new Set();
+  #popUnsubscribe?: () => void;
 
   constructor(given: Given<T>, destructor: Destructor<T>) {
-    this.#given = given;
+    super(given);
     this.#destructor = destructor;
   }
 
-  get(_register: (value: T) => void): T {
-    return this.#given.value;
+  protected compute(): T {
+    return this.parent.value;
   }
 
   async release(): Promise<void> {
     for (const value of this.#cleanUpValues) {
       await this.#destructor(value);
     }
-    this.#cleanUpValues.splice(0, this.#cleanUpValues.length);
+    this.#cleanUpValues.clear();
   }
 
-  onRegister(value: T): void {
-    this.#cleanUpValues.push(value);
+  mount(): void {
+    this.unmount();
+    this.#popUnsubscribe = this.onPop(({ previous, result }) => {
+      if (previous.parent === this.parent) {
+        this.#cleanUpValues.add(result as T);
+      }
+    });
+  }
+
+  unmount(): void {
+    if (this.#popUnsubscribe) {
+      this.#popUnsubscribe();
+    }
+    this.#popUnsubscribe = undefined;
   }
 }
