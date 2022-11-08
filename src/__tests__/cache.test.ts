@@ -90,38 +90,81 @@ describe.each(['Jest', 'Mocha'] as const)('caching with %s runner', (mode) => {
   });
 
   describe('given a smart cache is used', () => {
-    tests.define(() =>
-      suite(mode, ({ given }) => {
-        describe('top-most scope with smart cache', () => {
-          const dependency = given(() => 2);
-          const plusOne = given(
-            constructor.value.mockImplementation(() => dependency.value + 1),
-            { cacheScope: 'All', cache: 'smart' }
-          );
-          it('same dependency value accesses once', () => {
-            plusOne.value;
-          });
-          it('same dependency value accesses again', () => {
-            plusOne.value;
-          });
-          it('new dependency value accesses again', () => {
-            dependency.define(() => 1);
-            plusOne.value;
-          });
+    const itBehavesAsASmartCache = () => {
+      describe('given the same dependency value', () => {
+        tests.refine((t) => t.filter('same dependency value'));
+        it('only invokes the constructor once', () => {
+          expect(constructor.value).toHaveBeenCalledTimes(1);
         });
-      })
-    );
+      });
+      describe('given a new dependency value is used', () => {
+        it('invokes the constructor twice', () => {
+          expect(constructor.value).toHaveBeenCalledTimes(2);
+        });
+      });
+    };
 
-    describe('given the same dependency value', () => {
-      tests.refine((t) => t.filter('same dependency value'));
-      it('only invokes the constructor once', () => {
-        expect(constructor.value).toHaveBeenCalledTimes(1);
-      });
+    describe('using synchronous value access', () => {
+      tests.define(() =>
+        suite(mode, ({ given }) => {
+          describe('top-most scope with smart cache', () => {
+            const dependency = given(() => 2);
+            const plusOne = given(
+              constructor.value.mockImplementation(() => dependency.value + 1),
+              { cacheScope: 'All', cache: 'smart' }
+            );
+            it('same dependency value accesses once', () => {
+              plusOne.value;
+            });
+            it('same dependency value accesses again', () => {
+              plusOne.value;
+            });
+            it('new dependency value accesses again', () => {
+              dependency.define(() => 1);
+              plusOne.value;
+            });
+          });
+        })
+      );
+      itBehavesAsASmartCache();
     });
-    describe('given a new dependency value is used', () => {
-      it('invokes the constructor twice', () => {
-        expect(constructor.value).toHaveBeenCalledTimes(2);
-      });
+
+    describe('using asynchronous value access', () => {
+      const interrupt = () => new Promise((res) => setTimeout(res, 20));
+      tests.define(() =>
+        suite(mode, ({ given }) => {
+          describe('top-most scope with smart cache', () => {
+            const dependency = given(() => 2);
+            const plusOne = given(
+              constructor.value.mockImplementation(async () => {
+                await interrupt();
+                return dependency.value + 1;
+              }),
+              { cacheScope: 'All', cache: 'smart' }
+            );
+            it('same dependency value accesses once', (done) => {
+              plusOne.value.then(
+                () => done(),
+                () => done()
+              );
+            });
+            it('same dependency value accesses again', (done) => {
+              plusOne.value.the(
+                () => done(),
+                () => done()
+              );
+            });
+            it('new dependency value accesses again', (done) => {
+              dependency.define(() => 1);
+              plusOne.value.then(
+                () => done(),
+                () => done()
+              );
+            });
+          });
+        })
+      );
+      itBehavesAsASmartCache();
     });
   });
 });

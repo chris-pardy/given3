@@ -1,33 +1,28 @@
-import type { Frame } from './frame';
+import { DefineFrame } from './define';
 import type { Given } from '../given-types';
-import { givenStack } from '../given-stack';
 
-export class SmartCacheFrame<T> implements Frame<T> {
-  readonly #given: Given<T>;
-  readonly #definition: Frame<T>;
+export class SmartCacheFrame<T> extends DefineFrame<T> {
   #cache: { value: T; dependsOn: { given: Given<unknown>; result: unknown }[] }[] = [];
 
-  constructor(given: Given<T>, previous: Frame<T>) {
-    this.#given = given;
-    this.#definition = previous;
+  constructor(given: Given<T>, c: () => T) {
+    super(given, c);
   }
 
-  get(register: (value: T) => void): T {
+  compute(): T {
     for (const { value, dependsOn } of this.#cache) {
       if (dependsOn.every(({ given, result }) => given.value === result)) {
         return value;
       }
     }
 
-    const currentStackDepth = givenStack.currentStackDepth();
     const dependsOn: { given: Given<unknown>; result: unknown }[] = [];
-    const unsub = givenStack.onPop(({ previous, next, result, newStackDepth }) => {
-      if (next === this.#given && newStackDepth === currentStackDepth) {
-        dependsOn.push({ given: previous, result });
+    const unsub = this.onPop(({ previous, next, result }) => {
+      if (next === this) {
+        dependsOn.push({ given: previous.parent, result });
       }
     });
     try {
-      const v = this.#definition.get(register);
+      const v = super.compute();
       this.#cache.unshift({ value: v, dependsOn });
       return v;
     } finally {
@@ -37,10 +32,6 @@ export class SmartCacheFrame<T> implements Frame<T> {
 
   async release(): Promise<void> {
     this.#cache = [];
-    this.#definition.release();
-  }
-
-  onRegister(value: T): void {
-    this.#definition.onRegister(value);
+    super.release();
   }
 }

@@ -52,6 +52,48 @@ describe.each(['Jest', 'Mocha'] as const)('refinement with %s runner', (mode) =>
     itBehavesAsRefinement();
   });
 
+  describe('given async refinement using .value access', () => {
+    const interrupt = () => new Promise((res) => setImmediate(res));
+    constructor.define(() =>
+      jest.fn(async () => {
+        await interrupt();
+        return 0;
+      })
+    );
+    tests.define(() =>
+      suite(mode, ({ given }) => {
+        describe('given an async value', () => {
+          const g = given(constructor.value);
+          const itIsAccessed = () =>
+            it('is accessed', async (done) => {
+              g.value.then(() => done(), done);
+            });
+          describe('given 0 refinements', () => {
+            itIsAccessed();
+          });
+          describe('given 1 refinement', () => {
+            g.define(async () => {
+              await interrupt();
+              return plusOne.value(await g.value);
+            });
+            itIsAccessed();
+          });
+          describe('given 2 refinements', () => {
+            g.define(async () => {
+              await interrupt();
+              return plusOne.value(await g.value);
+            }).define(async () => {
+              await interrupt();
+              return plusOne.value(await g.value);
+            });
+            itIsAccessed();
+          });
+        });
+      })
+    );
+    itBehavesAsRefinement();
+  });
+
   describe('given refinement using .refine', () => {
     tests.define(() =>
       suite(mode, ({ given }) => {

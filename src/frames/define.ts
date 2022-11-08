@@ -1,15 +1,16 @@
-import type { Frame } from './frame';
+import { Frame } from './frame';
+import type { Given } from '../given-types';
 
-export class DefineFrame<T> implements Frame<T> {
+export class DefineFrame<T> extends Frame<T> {
   readonly #construct: () => T;
 
-  constructor(c: () => T) {
+  constructor(given: Given<T>, c: () => T) {
+    super(given);
     this.#construct = c;
   }
 
-  get(register: (value: T) => void): T {
+  protected compute(): T {
     const v = this.#construct();
-    register(v);
     return v;
   }
 
