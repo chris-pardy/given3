@@ -11,7 +11,7 @@
   "files": [
     "lib",
     "LICENSE",
-    "README.md"
+    "README"
   ],
   "scripts": {
     "postbuild:test": "jest --config ./jest-postbuild.config.js",
