@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./check"
+  },
+  "include": ["src/**/*", "src/**/*.mts"]
+}

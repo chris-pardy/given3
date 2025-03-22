@@ -1,0 +1,47 @@
+{
+  "name": "@given3/mocha",
+  "version": "2.0.0",
+  "description": "Mocha adapter for Given3",
+  "license": "MIT",
+  "author": "Chris Pardy <chris.pardy@gmail.com>",
+  "homepage": "https://github.com/chris-pardy/given3",
+  "keywords": [
+    "given",
+    "mocha",
+    "test",
+    "testing",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chris-pardy/given3.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README",
+    "LICENSE.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist check",
+    "typecheck": "tsc --build",
+    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsup": "catalog:",
+    "@types/mocha": "^10.0.0"
+  },
+  "peerDependencies": {
+    "mocha": "^10.0.0"
+  },
+  "dependencies": {
+    "@given3/core": "workspace:@given3/core@*"
+  }
+}

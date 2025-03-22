@@ -1,0 +1,35 @@
+{
+  "name": "@given3/core",
+  "version": "2.0.0",
+  "description": "Core package for Given3",
+  "license": "MIT",
+  "author": "Chris Pardy <chris.pardy@gmail.com>",
+  "homepage": "https://github.com/chris-pardy/given3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chris-pardy/given3.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README",
+    "LICENSE.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist check",
+    "typecheck": "tsc --build",
+    "build": "tsup src/index.mts --dts --format esm --tsconfig tsconfig.build.json",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.9",
+    "typescript": "catalog:",
+    "tsup": "catalog:"
+  }
+}

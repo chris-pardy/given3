@@ -1,0 +1,47 @@
+{
+  "name": "@given3/vitest",
+  "version": "2.0.0",
+  "description": "Vitest adapter for Given3",
+  "keywords": [
+    "given",
+    "vitest",
+    "test",
+    "testing",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "Chris Pardy <chris.pardy@gmail.com>",
+  "homepage": "https://github.com/chris-pardy/given3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chris-pardy/given3.git"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README",
+    "LICENSE.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "clean": "rm -rf dist check",
+    "typecheck": "tsc --build",
+    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "tsup": "catalog:"
+  },
+  "peerDependencies": {
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "@given3/core": "workspace:@given3/core@*"
+  }
+}

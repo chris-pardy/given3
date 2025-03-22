@@ -1,0 +1,5 @@
+packages:
+  - "packages/*"
+catalog:
+  typescript: ^5.8.2
+  tsup: ^8.4.0
