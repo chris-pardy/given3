@@ -10,6 +10,7 @@
     "typescript"
   ],
   "license": "MIT",
+  "private": false,
   "author": "Chris Pardy <chris.pardy@gmail.com>",
   "homepage": "https://github.com/chris-pardy/given3",
   "repository": {
