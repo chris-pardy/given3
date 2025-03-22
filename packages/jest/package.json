@@ -1,6 +1,6 @@
 {
   "name": "@given3/jest",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Jest adapter for Given3",
   "keywords": [
     "given",
