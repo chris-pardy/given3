@@ -1,6 +1,6 @@
 {
   "name": "@given3/mocha",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Mocha adapter for Given3",
   "license": "MIT",
   "private": false,
@@ -17,6 +17,8 @@
     "type": "git",
     "url": "https://github.com/chris-pardy/given3.git"
   },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
