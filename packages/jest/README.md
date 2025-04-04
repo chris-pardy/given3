@@ -12,15 +12,15 @@ npm install --save-dev @given3/jest
 ## Usage
 
 ```ts
-import { given } from '@given3/jest';
+import { given } from "@given3/jest";
 
-describe('my test', () => {
-    const user = given(() => ({ name: 'John', age: 30 }));
+describe("my test", () => {
+  const user = given(() => ({ name: "John", age: 30 }));
 
-    it('should be able to access the user', () => {
-        expect(user.value.name).toBe('John');
-    });
+  it("should be able to access the user", () => {
+    expect(user.value.name).toBe("John");
+  });
 });
-``` 
+```
 
 For more examples see our [documentation](https://github.com/chris-pardy/given3)

@@ -1,4 +1,4 @@
-import { createGivenConstructor as createGivenConstructorCore } from "@given3/core";
+import { createGivenLibrary } from "@given3/core";
 import { after, afterEach, before, beforeEach } from "mocha";
 
 export type {
@@ -7,9 +7,10 @@ export type {
   GivenOptions,
   GivenConstructor,
   GivenMiddleware,
+  CleanupFunction,
 } from "@given3/core";
 
-export const createGivenConstructor = createGivenConstructorCore.bind(null, {
+export const { createGivenConstructor, cleanup } = createGivenLibrary({
   beforeEach,
   afterEach,
   afterAll: after,

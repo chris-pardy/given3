@@ -12,15 +12,15 @@ npm install --save-dev @given3/mocha
 ## Usage
 
 ```ts
-import { given } from '@given3/mocha';
+import { given } from "@given3/mocha";
 
-describe('my test', () => {
-    const user = given(() => ({ name: 'John', age: 30 }));
+describe("my test", () => {
+  const user = given(() => ({ name: "John", age: 30 }));
 
-    it('should be able to access the user', () => {
-        expect(user.value.name).toBe('John');
-    });
+  it("should be able to access the user", () => {
+    expect(user.value.name).toBe("John");
+  });
 });
-``` 
+```
 
 For more examples see our [documentation](https://github.com/chris-pardy/given3)

@@ -3,6 +3,7 @@ import type {
   GivenOptions,
   Given,
   TestHooks,
+  RegisterCleanupFunction,
 } from "./given.mjs";
 import {
   type Frame,
@@ -12,24 +13,6 @@ import {
 } from "./frames.mjs";
 import type { AsyncLocalStorage } from "node:async_hooks";
 
-function asPromiseResult<T>(
-  definition: GivenDefinition<T>,
-): GivenDefinition<PromiseSettledResult<T>> {
-  return (registerCleanup) => {
-    try {
-      return {
-        status: "fulfilled",
-        value: definition(registerCleanup),
-      };
-    } catch (error) {
-      return {
-        status: "rejected",
-        reason: error,
-      };
-    }
-  };
-}
-
 export class GivenImpl<T> implements Given<T> {
   readonly name?: string;
 
@@ -37,6 +20,7 @@ export class GivenImpl<T> implements Given<T> {
   readonly #get: AsyncLocalStorage<
     <T>(givenImpl: GivenImpl<T>) => PromiseSettledResult<T>
   >;
+  readonly #registerCleanup: AsyncLocalStorage<RegisterCleanupFunction>;
   #frame: Frame<T> = new EmptyFrame(this);
 
   constructor(
@@ -44,10 +28,12 @@ export class GivenImpl<T> implements Given<T> {
     get: AsyncLocalStorage<
       <T>(givenImpl: GivenImpl<T>) => PromiseSettledResult<T>
     >,
+    registerCleanup: AsyncLocalStorage<RegisterCleanupFunction>,
     name?: string,
   ) {
     this.#hooks = hooks;
     this.#get = get;
+    this.#registerCleanup = registerCleanup;
     this.name = name;
   }
 
@@ -66,21 +52,49 @@ export class GivenImpl<T> implements Given<T> {
     return this.#frame;
   }
 
+  #asPromiseResult(
+    definition: GivenDefinition<T>,
+  ): (registerCleanup: RegisterCleanupFunction) => PromiseSettledResult<T> {
+    return (registerCleanup) => {
+      try {
+        return {
+          status: "fulfilled",
+          value: definition.call(this, registerCleanup),
+        };
+      } catch (error) {
+        return {
+          status: "rejected",
+          reason: error,
+        };
+      }
+    };
+  }
+
   define(
     definition: GivenDefinition<T>,
     { cache = "Each" }: GivenOptions = {},
   ): this {
     const frame =
       cache === false
-        ? new DefineFrame(this, asPromiseResult(definition), this.#get)
-        : new SmartCacheFrame(this, asPromiseResult(definition), this.#get);
-    
+        ? new DefineFrame(
+            this,
+            this.#asPromiseResult(definition),
+            this.#get,
+            this.#registerCleanup,
+          )
+        : new SmartCacheFrame(
+            this,
+            this.#asPromiseResult(definition),
+            this.#get,
+            this.#registerCleanup,
+          );
+
     // mount
     this.#hooks.beforeAll(() => {
       frame.previous = this.#frame;
       this.#frame = frame;
     });
-    
+
     // if the cache is each call release after each test
     if (cache !== "All") {
       this.#hooks.afterEach(() => {
@@ -90,8 +104,8 @@ export class GivenImpl<T> implements Given<T> {
 
     // unmount
     this.#hooks.afterAll(() => {
-        // can't use frame here since the order of the afterAll hooks and the stacked nature of frames
-        // can cause problems if multiple definitions for a single given are pushed in a single describe block
+      // can't use frame here since the order of the afterAll hooks and the stacked nature of frames
+      // can cause problems if multiple definitions for a single given are pushed in a single describe block
       const head = this.#frame;
       if (head.previous) {
         this.#frame = head.previous;

@@ -1,11 +1,24 @@
 /**
+ * A function that will be called to cleanup a Given value
+ */
+export type CleanupFunction = () => void | Promise<void>;
+
+/**
+ * A function that will be called to register a cleanup function
+ */
+export type RegisterCleanupFunction = (
+  cleanup: CleanupFunction | Disposable | AsyncDisposable,
+) => void;
+
+/**
  * A function that defines how to create a value for a Given instance
  * @template T The type of value to be created
  * @param registerCleanup A callback function that will be called to register a cleanup function
  * @returns The created value of type T
  */
 export type GivenDefinition<T> = (
-  registerCleanup: (cleanup: () => void | Promise<void>) => void,
+  this: Given<T>,
+  registerCleanup: RegisterCleanupFunction,
 ) => T;
 
 /**

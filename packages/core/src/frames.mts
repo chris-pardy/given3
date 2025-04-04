@@ -1,7 +1,8 @@
-import type { GivenDefinition } from "./given.mjs";
-import { type GivenImpl } from "./given-impl.mjs";
+import type { RegisterCleanupFunction } from "./given.mjs";
+import type { GivenImpl } from "./given-impl.mjs";
 import { NoDefinitionError, CircularReferenceError } from "./errors.mjs";
 import type { AsyncLocalStorage } from "node:async_hooks";
+import { toCleanUp, isDisposable } from "./disposable.mjs";
 
 /**
  * A Frame is a member of a stack that holds a definition, cache, and supports cleanup functions
@@ -42,17 +43,19 @@ export class EmptyFrame<T> implements Frame<T> {
   async release() {}
 }
 
-
 /**
  * A Frame that has a definition, and supports cleanup functions
  */
 export class DefineFrame<T> implements Frame<T> {
   readonly #given: GivenImpl<T>;
-  readonly #definition: GivenDefinition<PromiseSettledResult<T>>;
+  readonly #definition: (
+    registerCleanup: RegisterCleanupFunction,
+  ) => PromiseSettledResult<T>;
   readonly #cleanups: (() => void | Promise<void>)[] = [];
   readonly #get: AsyncLocalStorage<
     <TR>(given: GivenImpl<TR>) => PromiseSettledResult<TR>
   >;
+  readonly #registerCleanup: AsyncLocalStorage<RegisterCleanupFunction>;
   /**
    * Whether the value is currently being computed
    */
@@ -61,14 +64,18 @@ export class DefineFrame<T> implements Frame<T> {
 
   constructor(
     given: GivenImpl<T>,
-    definition: GivenDefinition<PromiseSettledResult<T>>,
+    definition: (
+      registerCleanup: RegisterCleanupFunction,
+    ) => PromiseSettledResult<T>,
     get: AsyncLocalStorage<
       <TR>(given: GivenImpl<TR>) => PromiseSettledResult<TR>
     >,
+    registerCleanup: AsyncLocalStorage<RegisterCleanupFunction>,
   ) {
     this.#given = given;
     this.#definition = definition;
     this.#get = get;
+    this.#registerCleanup = registerCleanup;
   }
 
   getValue(): PromiseSettledResult<T> {
@@ -83,35 +90,29 @@ export class DefineFrame<T> implements Frame<T> {
     this.#isComputing = true;
     try {
       // get the value of the given
-      const result = this.#get.run(<TR,>(impl: GivenImpl<TR>) => {
-        // if this definition references itself return the previous frame's value
-        if (impl === (this.#given as GivenImpl<unknown>)) {
-          if (this.previous) {
-            return this.previous.getValue() as PromiseSettledResult<TR>;
+      const result = this.#get.run(
+        <TR,>(impl: GivenImpl<TR>) => {
+          // if this definition references itself return the previous frame's value
+          if (impl === (this.#given as GivenImpl<unknown>)) {
+            if (this.previous) {
+              return this.previous.getValue() as PromiseSettledResult<TR>;
+            }
+            throw new NoDefinitionError(this.#given);
           }
-          throw new NoDefinitionError(this.#given);
-        }
-        // get the value of the given
-        return impl.currentFrame.getValue();
-      }, () =>
-        // run the definition, registering cleanup functions
-        this.#definition((cleanup) => this.#cleanups.push(cleanup)),
+          // get the value of the given
+          return impl.currentFrame.getValue();
+        },
+        () =>
+          this.#registerCleanup.run(
+            (cleanup) => this.#cleanups.push(toCleanUp(cleanup)),
+            () =>
+              // run the definition, registering cleanup functions
+              this.#definition((cleanup) => this.#cleanups.push(toCleanUp(cleanup))),
+          ),
       );
       // if the value is a function or object, that has a dispose method, add it to the cleanup functions
-      if (
-        result.status === "fulfilled" &&
-        result.value != null &&
-        (typeof result.value === "function" || typeof result.value === "object")
-      ) {
-        if (Symbol.dispose in result.value) {
-          this.#cleanups.push(() =>
-            (result.value as Disposable)[Symbol.dispose](),
-          );
-        } else if (Symbol.asyncDispose in result.value) {
-          this.#cleanups.push(async () =>
-            (result.value as AsyncDisposable)[Symbol.asyncDispose](),
-          );
-        }
+      if (result.status === "fulfilled" && isDisposable(result.value)) {
+        this.#cleanups.push(toCleanUp(result.value));
       }
       return result;
     } finally {
@@ -150,10 +151,13 @@ export class SmartCacheFrame<T> extends DefineFrame<T> {
 
   constructor(
     given: GivenImpl<T>,
-    definition: GivenDefinition<PromiseSettledResult<T>>,
+    definition: (
+      registerCleanup: RegisterCleanupFunction,
+    ) => PromiseSettledResult<T>,
     get: AsyncLocalStorage<
       <TR>(given: GivenImpl<TR>) => PromiseSettledResult<TR>
     >,
+    registerCleanup: AsyncLocalStorage<RegisterCleanupFunction>,
   ) {
     super(
       given,
@@ -241,7 +245,8 @@ export class SmartCacheFrame<T> extends DefineFrame<T> {
           return result;
         });
       },
-      get
+      get,
+      registerCleanup,
     );
   }
 }
