@@ -7,6 +7,7 @@ import type {
 } from "./given.mjs";
 import { GivenImpl } from "./given-impl.mjs";
 import { AsyncLocalStorage } from "node:async_hooks";
+import { TestHooksImpl } from "./test-hooks.mjs";
 
 /**
  * A middleware function that can be used to modify a Given instance on creation.
@@ -41,51 +42,6 @@ class GivenProxy<T> implements Given<T> {
   define(definition: GivenDefinition<T>, options?: GivenOptions): this {
     this.#given.define(definition, options);
     return this;
-  }
-}
-
-/**
- * Test hooks, including some setup to ensure that when a given is defined in a test it still works
- */
-class TestHooksImpl implements Omit<TestHooks, "beforeEach"> {
-  readonly #hooks: TestHooks;
-  readonly #afterTests: (() => void | Promise<void>)[] = [];
-  #inTest: boolean = false;
-
-  constructor(hooks: TestHooks) {
-    this.#hooks = hooks;
-    hooks.beforeEach(() => (this.#inTest = true));
-    hooks.afterEach(() => {
-      this.#inTest = false;
-      for (const afterTest of this.#afterTests) {
-        afterTest();
-      }
-      this.#afterTests.length = 0;
-    });
-  }
-
-  beforeAll(hookFn: () => void): void {
-    if (this.#inTest) {
-      hookFn();
-    } else {
-      this.#hooks.beforeAll(hookFn);
-    }
-  }
-
-  afterEach(hookFn: () => void | Promise<void>): void {
-    if (this.#inTest) {
-      this.#afterTests.push(hookFn);
-    } else {
-      this.#hooks.afterEach(hookFn);
-    }
-  }
-
-  afterAll(hookFn: () => void | Promise<void>): void {
-    if (this.#inTest) {
-      this.#afterTests.push(hookFn);
-    } else {
-      this.#hooks.afterAll(hookFn);
-    }
   }
 }
 

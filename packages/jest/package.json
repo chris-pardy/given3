@@ -1,6 +1,6 @@
 {
   "name": "@given3/jest",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Jest adapter for Given3",
   "keywords": [
     "given",
@@ -25,18 +25,22 @@
   },
   "files": [
     "dist",
-    "LICENSE.md"
+    "LICENSE.md",
+    "README.md"
   ],
   "type": "module",
   "scripts": {
     "clean": "rm -rf dist check",
     "typecheck": "tsc --build",
-    "build": "tsup src/index.mts --dts --format esm --tsconfig tsconfig.build.json"
+    "build": "tsup src/index.mts --dts --format esm --tsconfig tsconfig.build.json",
+    "test": "jest"
   },
   "devDependencies": {
     "typescript": "catalog:",
     "tsup": "catalog:",
-    "jest": "^29.0.0"
+    "jest": "^29.0.0",
+    "@babel/preset-typescript": "^7.23.0",
+    "@types/jest": "^29.0.0"
   },
   "peerDependencies": {
     "@jest/globals": "^29.0.0"

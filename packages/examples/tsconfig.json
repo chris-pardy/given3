@@ -4,10 +4,9 @@
     "baseUrl": ".",
     "outDir": "./check",
     "paths": {
-      "@given3/core": ["../core/src/index.mts"]
-    },
-    "isolatedModules": true
+      "@given3/vitest": ["../vitest/src/index.mts"]
+    }
   },
-  "references": [{ "path": "../core" }],
+  "references": [{ "path": "../vitest" }],
   "include": ["src/**/*", "src/**/*.mts"]
 }

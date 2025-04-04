@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { NoDefinitionError, CircularReferenceError } from "./errors.mjs";
-import { type Given } from "./given.mjs";
+import { NoDefinitionError, CircularReferenceError } from "../errors.mjs";
+import { type Given } from "../given.mjs";
 
 describe("NoDefinitionError", () => {
   it("should be an instance of Error", () => {

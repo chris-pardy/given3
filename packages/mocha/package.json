@@ -1,6 +1,6 @@
 {
   "name": "@given3/mocha",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Mocha adapter for Given3",
   "license": "MIT",
   "private": false,
@@ -25,7 +25,8 @@
   },
   "files": [
     "dist",
-    "LICENSE.md"
+    "LICENSE.md",
+    "README.md"
   ],
   "type": "module",
   "scripts": {

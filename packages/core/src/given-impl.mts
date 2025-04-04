@@ -82,7 +82,7 @@ export class GivenImpl<T> implements Given<T> {
     });
     
     // if the cache is each call release after each test
-    if (cache === "Each") {
+    if (cache !== "All") {
       this.#hooks.afterEach(() => {
         frame.release();
       });
@@ -98,7 +98,7 @@ export class GivenImpl<T> implements Given<T> {
       }
       head.release();
     });
-    
+
     // return the given impl for chaining
     return this;
   }
