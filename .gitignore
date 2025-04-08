@@ -3,3 +3,4 @@ packages/*/check/
 packages/*/dist/
 *.tsbuildinfo
 .vscode/
+.turbo/

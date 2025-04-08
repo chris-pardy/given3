@@ -24,14 +24,22 @@
   ],
   "type": "module",
   "scripts": {
-    "clean": "rm -rf dist check",
-    "typecheck": "tsc --build",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc",
     "build": "tsup src/index.mts --dts --format esm --tsconfig tsconfig.build.json",
-    "test": "vitest"
+    "test:watch": "vitest --watch",
+    "test": "vitest --no-watch",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "vitest": "^3.0.9",
     "typescript": "catalog:",
-    "tsup": "catalog:"
+    "tsup": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "typescript-eslint": "catalog:"
   }
 }

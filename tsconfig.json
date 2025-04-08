@@ -5,8 +5,10 @@
     "strict": true,
     "skipLibCheck": true,
     "moduleResolution": "NodeNext",
-    "composite": true,
-    "noEmit": false,
-    "declaration": true
+    "noEmit": true,
+    "isolatedModules": true,
+    "paths": {
+      "@given3/core": ["../core/src/index.mts"]
+    }
   }
 }

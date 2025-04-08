@@ -32,14 +32,21 @@
   ],
   "type": "module",
   "scripts": {
-    "clean": "rm -rf dist check",
-    "typecheck": "tsc --build",
-    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json"
+    "clean": "rm -rf dist",
+    "typecheck": "tsc",
+    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "typescript": "catalog:",
     "tsup": "catalog:",
-    "@types/mocha": "^10.0.0"
+    "@types/mocha": "^10.0.0",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "peerDependencies": {
     "mocha": "^10.0.0"

@@ -107,7 +107,9 @@ export class DefineFrame<T> implements Frame<T> {
             (cleanup) => this.#cleanups.push(toCleanUp(cleanup)),
             () =>
               // run the definition, registering cleanup functions
-              this.#definition((cleanup) => this.#cleanups.push(toCleanUp(cleanup))),
+              this.#definition((cleanup) =>
+                this.#cleanups.push(toCleanUp(cleanup)),
+              ),
           ),
       );
       // if the value is a function or object, that has a dispose method, add it to the cleanup functions

@@ -6,7 +6,8 @@
   "license": "MIT",
   "dependencies": {},
   "scripts": {
-    "test": "vitest"
+    "test": "vitest --no-watch",
+    "test:watch": "vitest --watch"
   },
   "devDependencies": {
     "typescript": "catalog:",

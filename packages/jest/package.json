@@ -32,17 +32,23 @@
   ],
   "type": "module",
   "scripts": {
-    "clean": "rm -rf dist check",
-    "typecheck": "tsc --build",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc",
     "build": "tsup src/index.mts --dts --format esm --tsconfig tsconfig.build.json",
-    "test": "jest"
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "typescript": "catalog:",
     "tsup": "catalog:",
     "jest": "^29.0.0",
-    "@babel/preset-typescript": "^7.23.0",
-    "@types/jest": "^29.0.0"
+    "ts-jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "peerDependencies": {
     "@jest/globals": "^29.0.0"

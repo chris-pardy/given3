@@ -1,4 +1,4 @@
-import { given } from "src/index.mjs";
+import { given } from "../index.mjs";
 
 describe("example", () => {
   const name = given(() => "John");

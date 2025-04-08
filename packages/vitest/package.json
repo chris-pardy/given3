@@ -32,14 +32,20 @@
   ],
   "type": "module",
   "scripts": {
-    "test": "vitest",
-    "clean": "rm -rf dist check",
-    "typecheck": "tsc --build",
-    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json"
+    "clean": "rm -rf dist",
+    "typecheck": "tsc",
+    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "typescript": "catalog:",
-    "tsup": "catalog:"
+    "tsup": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "peerDependencies": {
     "vitest": "^2.0.0"

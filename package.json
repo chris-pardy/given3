@@ -1,17 +1,18 @@
 {
+  "packageManager": "pnpm@9.14.2",
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "eslint": "^9.23.0",
-    "eslint-config-prettier": "^10.1.1",
-    "prettier": "^3.5.3",
-    "typescript-eslint": "^8.27.0"
+    "turbo": "^2.5.0",
+    "typescript-eslint": "catalog:"
   },
   "scripts": {
-    "clean": "pnpm -r clean",
-    "typecheck": "pnpm -r typecheck",
-    "build": "pnpm --filter core build && pnpm -r build",
-    "lint": "eslint .",
-    "format": "prettier --write .",
+    "clean": "turbo clean",
+    "typecheck": "turbo typecheck",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "format": "turbo format",
+    "precommit": "turbo precommit",
     "update-versions": "node --experimental-transform-types scripts/update-versions.mts"
   }
 }
