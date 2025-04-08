@@ -1,12 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "outDir": "./check",
     "paths": {
       "@given3/vitest": ["../vitest/src/index.mts"]
     }
-  },
-  "references": [{ "path": "../vitest" }],
-  "include": ["src/**/*", "src/**/*.mts"]
+  }
 }
