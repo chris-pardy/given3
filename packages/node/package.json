@@ -49,5 +49,8 @@
   },
   "dependencies": {
     "@given3/core": "workspace:@given3/core@*"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
