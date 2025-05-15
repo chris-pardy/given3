@@ -13,6 +13,8 @@
     "lint:fix": "turbo lint:fix",
     "format": "turbo format",
     "precommit": "turbo precommit",
-    "update-versions": "node --experimental-transform-types scripts/update-versions.mts"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
