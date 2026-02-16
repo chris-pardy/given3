@@ -1,4 +1,4 @@
-import { createGivenLibrary } from "@given3/core";
+import { createGivenLibrary } from "./_core/index.ts";
 import {
   afterAll,
   afterEach,
@@ -13,7 +13,7 @@ export type {
   GivenConstructor,
   GivenMiddleware,
   CleanupFunction,
-} from "@given3/core";
+} from "./_core/index.ts";
 
 export const { createGivenConstructor, cleanup } = createGivenLibrary({
   beforeEach,

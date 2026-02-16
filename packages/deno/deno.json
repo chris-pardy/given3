@@ -4,12 +4,16 @@
   "license": "MIT",
   "exports": "./mod.ts",
   "imports": {
-    "@given3/core": "npm:@given3/core@^2.1.0",
     "@std/testing": "jsr:@std/testing@^1",
     "@std/expect": "jsr:@std/expect@^1"
   },
   "tasks": {
+    "build": "deno run -A build.ts",
+    "check": "deno check mod.ts",
     "test": "deno test",
-    "check": "deno check mod.ts"
+    "publish": "deno task build && deno publish"
+  },
+  "publish": {
+    "exclude": ["build.ts", "tests/"]
   }
 }

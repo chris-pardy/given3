@@ -42,5 +42,5 @@ jobs:
     - name: Test
       run: pnpm turbo test
 
-    - name: Deno test
-      run: cd packages/deno && deno task test
+    - name: Deno build and test
+      run: cd packages/deno && deno task build && deno task test
