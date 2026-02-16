@@ -37,7 +37,9 @@
     "build": "tsup src/index.mts --dts --format esm --tsconfig tsconfig.build.json",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "publish": "npm publish --access public"
   },
   "devDependencies": {
     "typescript": "catalog:",

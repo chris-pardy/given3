@@ -1,0 +1,19 @@
+{
+  "name": "@given3/deno",
+  "version": "2.1.0",
+  "license": "MIT",
+  "exports": "./mod.ts",
+  "imports": {
+    "@std/testing": "jsr:@std/testing@^1",
+    "@std/expect": "jsr:@std/expect@^1"
+  },
+  "tasks": {
+    "build": "deno run -A build.ts",
+    "check": "deno check mod.ts",
+    "test": "deno test",
+    "publish": "deno task build && deno publish"
+  },
+  "publish": {
+    "exclude": ["build.ts", "tests/"]
+  }
+}

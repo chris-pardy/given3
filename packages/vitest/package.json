@@ -37,7 +37,9 @@
     "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "vitest --no-watch",
+    "publish": "npm publish --access public"
   },
   "devDependencies": {
     "typescript": "catalog:",
@@ -45,7 +47,8 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "eslint-config-prettier": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "vitest": "^2.0.0"
   },
   "peerDependencies": {
     "vitest": "^2.0.0"

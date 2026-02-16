@@ -1,0 +1,108 @@
+# Given3
+
+Given3 is a TypeScript testing library that replaces verbose beforeEach/afterEach setup with lazy, cached, dependency-tracking test fixtures. It provides a `given()` function that creates lazily-initialized values with automatic caching, cleanup, and smart invalidation. Adapters exist for Jest, Vitest, Mocha, Node test runner, Bun, and Deno.
+
+> For comprehensive API reference, all code examples, and architecture details, see [llms-full.txt](llms-full.txt).
+
+## Installation
+
+```
+npm install --save-dev @given3/jest    # Jest
+npm install --save-dev @given3/vitest  # Vitest
+npm install --save-dev @given3/mocha   # Mocha
+npm install --save-dev @given3/node    # Node test runner
+npm install --save-dev @given3/bun     # Bun
+```
+
+For Deno, import from `@given3/deno` via `deno.json` imports with `npm:@given3/core` and `jsr:@std/testing`.
+
+## Core API
+
+### `given<T>(definition?, options?): Given<T>`
+
+Creates a lazy test fixture. Overloads:
+- `given<T>()` — declare with no definition (define later)
+- `given<T>(name, definition?, options?)` — named given
+- `given<T>(definition, options?)` — anonymous given
+
+### `Given<T>` interface
+
+- `.value: T` — access the lazily-computed value (triggers computation on first access)
+- `.define(definition, options?): this` — set or override the definition in a nested describe block
+- `.name?: string` — optional name for error messages
+
+### `GivenDefinition<T>`
+
+```ts
+type GivenDefinition<T> = (this: Given<T>, registerCleanup: RegisterCleanupFunction) => T;
+```
+
+### `GivenOptions`
+
+```ts
+type GivenOptions = { cache?: "Each" | "All" | false };
+```
+
+### `cleanup(fn)`
+
+Standalone function to register cleanup outside a definition. Accepts `CleanupFunction | Disposable | AsyncDisposable`.
+
+### `createGivenConstructor(...middlewares)`
+
+Factory for custom `given` with middleware. Middleware type: `<T>(given: Given<T>) => Given<T>`.
+
+## Cache Modes
+
+| Mode    | Behavior                                        |
+|---------|-------------------------------------------------|
+| `"Each"`| Default. Value recomputed per test. Cleanup runs after each test. |
+| `"All"` | Value shared across tests in a suite. Cleanup runs after the suite. |
+| `false` | No caching. Value recomputed on every `.value` access. |
+
+Smart caching tracks which other `given` values are accessed during computation and automatically invalidates when dependencies change.
+
+## Key Patterns
+
+**Lazy initialization** — values are not computed until `.value` is first accessed:
+```ts
+const service = given(() => new UserService());
+it("test", () => { service.value.doSomething(); });
+```
+
+**Dependency tracking** — givens that reference other givens auto-invalidate:
+```ts
+const id = given(() => Math.random());
+const user = given(() => ({ id: id.value }));
+```
+
+**Refinement in nested describes** — redefine values for sub-contexts:
+```ts
+const users = given(() => [{ id: 1 }]);
+describe("empty", () => {
+  users.define(() => []);
+});
+```
+
+**Cleanup** — register teardown via callback or Disposable:
+```ts
+const db = given(async (cleanup) => {
+  const conn = await connect();
+  cleanup(() => conn.close());
+  return conn;
+}, { cache: "All" });
+```
+
+**Self-referencing** — access previous definition via `this`:
+```ts
+factory.define(function() {
+  return this.value.params({ role: "admin" });
+});
+```
+
+## Exports per Adapter
+
+Each adapter (`@given3/jest`, `@given3/vitest`, etc.) exports:
+- `given` — default GivenConstructor
+- `cleanup` — RegisterCleanupFunction
+- `createGivenConstructor` — factory for custom given with middleware
+- Types: `Given`, `GivenDefinition`, `GivenOptions`, `GivenConstructor`, `GivenMiddleware`, `CleanupFunction`

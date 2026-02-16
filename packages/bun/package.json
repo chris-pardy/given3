@@ -1,22 +1,10 @@
 {
-  "name": "@given3/node",
+  "name": "@given3/bun",
   "version": "2.1.0",
-  "description": "Node adapter for Given3",
-  "keywords": [
-    "given",
-    "node",
-    "test",
-    "testing",
-    "typescript"
-  ],
+  "description": "Bun adapter for Given3",
   "license": "MIT",
   "private": false,
   "author": "Chris Pardy <chris.pardy@gmail.com>",
-  "homepage": "https://github.com/chris-pardy/given3",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/chris-pardy/given3.git"
-  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -25,23 +13,20 @@
       "default": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "LICENSE.md",
-    "README.md"
-  ],
+  "files": ["dist", "LICENSE.md", "README.md"],
   "type": "module",
   "scripts": {
-    "test": "node --experimental-transform-types --test 'src/__tests__/*.test.mts'",
+    "test": "bun test",
     "clean": "rm -rf dist",
     "typecheck": "tsc",
-    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json",
+    "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json --external bun:test",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
     "publish": "npm publish --access public"
   },
   "devDependencies": {
+    "bun-types": "^1.2.0",
     "typescript": "catalog:",
     "tsup": "catalog:",
     "eslint": "catalog:",
@@ -51,8 +36,5 @@
   },
   "dependencies": {
     "@given3/core": "workspace:@given3/core@*"
-  },
-  "engines": {
-    "node": ">=22"
   }
 }

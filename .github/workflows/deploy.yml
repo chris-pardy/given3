@@ -1,12 +1,11 @@
-name: Turbo Build on Pull Request
+name: Deploy
 
 on:
-  pull_request:
-    branches:
-      - main
+  release:
+    types: [published]  # Trigger on published releases
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,6 +16,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version-file: '.nvmrc'
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Setup PNPM
       uses: pnpm/action-setup@v4
@@ -44,3 +44,13 @@ jobs:
 
     - name: Deno build and test
       run: cd packages/deno && deno task build && deno task test
+
+    - name: Publish npm packages
+      run: npx turbo run publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Publish Deno package
+      run: cd packages/deno && deno task publish
+      env:
+        DENO_TOKEN: ${{ secrets.DENO_TOKEN }}

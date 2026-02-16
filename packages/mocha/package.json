@@ -37,7 +37,9 @@
     "build": "tsup src/index.mts --format esm --dts --tsconfig tsconfig.build.json",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "mocha --node-option experimental-transform-types 'src/__tests__/*.test.mts'",
+    "publish": "npm publish --access public"
   },
   "devDependencies": {
     "typescript": "catalog:",
@@ -46,7 +48,8 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "eslint-config-prettier": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "mocha": "^10.0.0"
   },
   "peerDependencies": {
     "mocha": "^10.0.0"
