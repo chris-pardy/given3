@@ -1,7 +1,8 @@
-import { given, cleanup } from "../index.mjs";
-import { describe, it, expect } from "@jest/globals";
+import { given, cleanup } from "../mod.ts";
+import { describe, it } from "@std/testing/bdd";
+import { expect } from "@std/expect";
 
-describe("given3 jest integration", () => {
+describe("given3 deno integration", () => {
   describe("basic lazy values", () => {
     const name = given(() => "John");
     const age = given(() => 30);

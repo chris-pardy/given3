@@ -31,6 +31,18 @@ for Vitest:
 npm install --save-dev @given3/vitest
 ```
 
+for Bun:
+
+```bash
+bun add --dev @given3/bun
+```
+
+for Deno:
+
+```bash
+deno add jsr:@given3/deno
+```
+
 ## Usage
 
 Given3 allows you to write more readable and expressive tests by reusing setup code in an intelligent way.

@@ -1,14 +1,14 @@
-import { given, cleanup } from "../index.mjs";
-import { describe, it, expect } from "@jest/globals";
+import { given, cleanup } from "../index.mts";
+import assert from "node:assert";
 
-describe("given3 jest integration", () => {
+describe("given3 mocha integration", () => {
   describe("basic lazy values", () => {
     const name = given(() => "John");
     const age = given(() => 30);
 
     it("should lazily initialize values", () => {
-      expect(name.value).toBe("John");
-      expect(age.value).toBe(30);
+      assert.strictEqual(name.value, "John");
+      assert.strictEqual(age.value, 30);
     });
   });
 
@@ -18,7 +18,7 @@ describe("given3 jest integration", () => {
     it("should return the same instance on multiple accesses", () => {
       const first = obj.value;
       const second = obj.value;
-      expect(first).toBe(second);
+      assert.strictEqual(first, second);
     });
   });
 
@@ -27,9 +27,9 @@ describe("given3 jest integration", () => {
     const greeting = given(() => `Hello, ${name.value}!`);
 
     it("should recompute when dependency changes", () => {
-      expect(greeting.value).toBe("Hello, John!");
+      assert.strictEqual(greeting.value, "Hello, John!");
       name.define(() => "Jane");
-      expect(greeting.value).toBe("Hello, Jane!");
+      assert.strictEqual(greeting.value, "Hello, Jane!");
     });
   });
 
@@ -38,19 +38,19 @@ describe("given3 jest integration", () => {
     const greeting = given(() => `Hello, ${name.value}!`);
 
     it("should use the default value", () => {
-      expect(greeting.value).toBe("Hello, John!");
+      assert.strictEqual(greeting.value, "Hello, John!");
     });
 
     describe("when name is redefined", () => {
       name.define(() => "Jane");
 
       it("should use the refined value", () => {
-        expect(greeting.value).toBe("Hello, Jane!");
+        assert.strictEqual(greeting.value, "Hello, Jane!");
       });
     });
 
     it("should still use the original value in the outer scope", () => {
-      expect(greeting.value).toBe("Hello, John!");
+      assert.strictEqual(greeting.value, "Hello, John!");
     });
   });
 
@@ -65,12 +65,12 @@ describe("given3 jest integration", () => {
     });
 
     it("should access the resource", () => {
-      expect(resource.value).toBe("resource");
-      expect(cleanedUp).toBe(false);
+      assert.strictEqual(resource.value, "resource");
+      assert.strictEqual(cleanedUp, false);
     });
 
     it("should have cleaned up from previous test", () => {
-      expect(cleanedUp).toBe(true);
+      assert.strictEqual(cleanedUp, true);
     });
   });
 
@@ -85,12 +85,12 @@ describe("given3 jest integration", () => {
     });
 
     it("should access the resource", () => {
-      expect(resource.value).toBe("resource");
-      expect(cleanedUp).toBe(false);
+      assert.strictEqual(resource.value, "resource");
+      assert.strictEqual(cleanedUp, false);
     });
 
     it("should have cleaned up from previous test", () => {
-      expect(cleanedUp).toBe(true);
+      assert.strictEqual(cleanedUp, true);
     });
   });
 });

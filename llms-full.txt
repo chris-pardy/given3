@@ -1,0 +1,497 @@
+# Given3 — Comprehensive Reference
+
+## Overview
+
+Given3 is a TypeScript testing library that replaces verbose beforeEach/afterEach setup
+with lazy, cached, dependency-tracking test fixtures. It is a spiritual successor to
+Given2 (https://github.com/tatyshev/given2) with more powerful caching and full TypeScript
+support. Adapters exist for Jest, Vitest, Mocha, Node test runner, Bun, and Deno.
+
+Repository: https://github.com/chris-pardy/given3
+
+---
+
+## Installation
+
+Install the adapter matching your test framework:
+
+  npm install --save-dev @given3/jest       # Jest
+  npm install --save-dev @given3/vitest     # Vitest
+  npm install --save-dev @given3/mocha      # Mocha
+  npm install --save-dev @given3/node       # Node built-in test runner
+  npm install --save-dev @given3/bun        # Bun test runner
+
+For Deno, use deno.json imports:
+
+  {
+    "imports": {
+      "@given3/deno": "./packages/deno/mod.ts",
+      "@given3/core": "npm:@given3/core@^2.1.0",
+      "@std/testing": "jsr:@std/testing@^1"
+    }
+  }
+
+---
+
+## Full API Reference
+
+### Type: CleanupFunction
+
+  type CleanupFunction = () => void | Promise<void>;
+
+A function called to tear down a Given value when its cache is released.
+
+### Type: RegisterCleanupFunction
+
+  type RegisterCleanupFunction = (
+    cleanup: CleanupFunction | Disposable | AsyncDisposable,
+  ) => void;
+
+Registers a cleanup function, Disposable, or AsyncDisposable. Called automatically
+when the cached value is released.
+
+### Type: GivenDefinition<T>
+
+  type GivenDefinition<T> = (
+    this: Given<T>,
+    registerCleanup: RegisterCleanupFunction,
+  ) => T;
+
+The factory function that produces a value. Receives a cleanup registrar as its first
+argument. `this` is bound to the Given instance, allowing self-referencing (accessing
+the previous definition's value via `this.value`).
+
+### Type: GivenOptions
+
+  type GivenOptions = {
+    cache?: "Each" | "All" | false;  // default: "Each"
+  };
+
+### Interface: Given<T>
+
+  interface Given<T> {
+    readonly name?: string;
+    readonly value: T;
+    define(definition: GivenDefinition<T>, options?: GivenOptions): this;
+  }
+
+- `name` — optional label for error messages.
+- `value` — lazily computes and returns the value. Cached per the cache mode.
+- `define(definition, options?)` — sets/overrides the definition. Used in nested
+  describe blocks to refine the value for sub-contexts.
+
+### Interface: GivenConstructor
+
+  interface GivenConstructor {
+    <T>(name?: string, definition?: GivenDefinition<T>, options?: GivenOptions): Given<T>;
+    <T>(definition: GivenDefinition<T>, options?: GivenOptions): Given<T>;
+  }
+
+Call signatures:
+  given<T>()                                  — declare without definition
+  given<T>("name")                            — named, no definition
+  given<T>("name", definition)                — named with definition
+  given<T>("name", definition, { cache })     — named with definition and options
+  given<T>(definition)                        — anonymous with definition
+  given<T>(definition, { cache })             — anonymous with definition and options
+
+### Function: cleanup
+
+  cleanup(fn: CleanupFunction | Disposable | AsyncDisposable): void;
+
+Standalone cleanup registration. Can be used inside a given definition or at suite
+scope. When used at suite scope (outside a definition), cleanup runs after all tests.
+
+### Function: createGivenConstructor
+
+  createGivenConstructor(...middlewares: GivenMiddleware[]): GivenConstructor;
+
+Creates a customized `given` function with middleware applied. Each middleware
+intercepts Given creation.
+
+### Type: GivenMiddleware
+
+  type GivenMiddleware = <T>(given: Given<T>) => Given<T>;
+
+### Interface: TestHooks
+
+  interface TestHooks {
+    beforeAll(hookFn: () => void): void;
+    beforeEach(hookFn: () => void): void;
+    afterEach(hookFn: () => void | Promise<void>): void;
+    afterAll(hookFn: () => void | Promise<void>): void;
+  }
+
+Used internally by createGivenLibrary. Adapter authors provide these from their
+test framework.
+
+### Function: createGivenLibrary (from @given3/core)
+
+  function createGivenLibrary(testHooks: TestHooks): GivenLibrary;
+
+  type GivenLibrary = {
+    cleanup: RegisterCleanupFunction;
+    createGivenConstructor: (...middlewares: GivenMiddleware[]) => GivenConstructor;
+  };
+
+Core factory used by every adapter. Pass your framework's lifecycle hooks.
+
+### Error: NoDefinitionError
+
+Thrown when `.value` is accessed on a Given that has no definition.
+
+### Error: CircularReferenceError
+
+Thrown when a Given's definition accesses its own `.value` without a previous
+definition (creating a circular dependency).
+
+---
+
+## Cache Modes Deep-Dive
+
+### "Each" (default)
+
+- Value is computed lazily on first `.value` access within a test.
+- After each test, the cached value is released and cleanups run.
+- Next test triggers fresh computation.
+- Smart caching: if dependencies have not changed, the previous value is reused
+  (cleanup is skipped, original value returned).
+
+### "All"
+
+- Value is computed lazily on first `.value` access.
+- Shared across all tests within the describe block where it was defined.
+- Released after all tests in that suite complete.
+- Ideal for expensive resources (database connections, server startups).
+- Smart caching still applies: if a dependency changes, the value is recomputed.
+
+### false
+
+- No caching at all.
+- Every `.value` access triggers a fresh computation.
+- Cleanup functions are still called when the describe block exits.
+
+### Smart Caching (dependency tracking)
+
+When a Given's definition accesses other Givens via `.value`, those accesses are
+tracked as dependencies. On subsequent evaluations, Given3 checks whether any
+dependency has changed (by reference equality). If all dependencies are unchanged,
+the cached result is returned without re-executing the definition or its cleanups.
+
+This is implemented via AsyncLocalStorage to track `.value` calls during definition
+execution.
+
+---
+
+## Disposable Support
+
+Given3 supports the TC39 Disposable protocol:
+- If a definition returns a Disposable or AsyncDisposable, it is automatically
+  disposed when the cache is released.
+- The cleanup registrar also accepts Disposable/AsyncDisposable values.
+
+---
+
+## Usage Examples
+
+### Basic: Lazy Initialization and Dependency Tracking
+
+  import { given } from "@given3/vitest";
+  import { describe, it, expect } from "vitest";
+  import { userRepository } from "../user-repository.mjs";
+
+  describe("a user repository", () => {
+    const id = given(() => Math.random());
+    const user = given("a user", () => ({
+      id: id.value,
+      name: "John Doe",
+      email: "john.doe@example.com",
+    }));
+
+    const repository = given("a user repository with the user", () =>
+      userRepository([user.value]),
+    );
+
+    const userByIdRequest = given<number>("a user by id input");
+    const userByIdResponse = given(() => repository.value.getUserById(id.value));
+
+    describe("when a known userId is requested", () => {
+      userByIdRequest.define(id.value);
+
+      it("should return the user", () => {
+        expect(userByIdResponse.value).toEqual(user.value);
+      });
+    });
+
+    describe("when an unknown userId is requested", () => {
+      userByIdRequest.define(() => Math.random());
+
+      it("should return null", () => {
+        expect(userByIdResponse.value).toBeNull();
+      });
+    });
+  });
+
+### Replacing beforeEach / afterEach
+
+Without Given3:
+
+  let service: UserService;
+  beforeEach(() => {
+    service = new UserService();
+    service.setup(initialUsers);
+  });
+  afterEach(() => {
+    service.teardown();
+  });
+
+With Given3:
+
+  import { given, cleanup } from "@given3/vitest";
+
+  const service = given(() => {
+    const s = new UserService();
+    s.setup(initialUsers);
+    cleanup(() => s.teardown());
+    return s;
+  });
+
+### Variable Setup with Refinement
+
+  const initialUsers = given(() => [{ id: 1, name: "John Doe" }]);
+
+  const service = given(() => {
+    const s = new UserService();
+    s.setup(initialUsers.value);
+    cleanup(() => s.teardown());
+    return s;
+  });
+
+  it("should return a user", async () => {
+    await expect(service.value.getUser(1)).resolves.toEqual(initialUsers.value[0]);
+  });
+
+  describe("when there are no users", () => {
+    initialUsers.define(() => []);
+
+    it("should throw an error", async () => {
+      await expect(service.value.getUser(1)).rejects.toThrow();
+    });
+  });
+
+### Unifying Act and Assert
+
+  const userQueryParam = given(() => 1);
+  const userQueryResult = given(() =>
+    userService.value.getUser(userQueryParam.value),
+  );
+
+  describe("given a user exists", () => {
+    initialUsers.define(() => [{ id: userQueryParam.value, name: "John Doe" }]);
+
+    describe("when the user is requested", () => {
+      beforeEach(() => userQueryResult.value);
+
+      it("should return the user", async () => {
+        await expect(userQueryResult.value).resolves.toEqual(initialUsers.value[0]);
+      });
+
+      it("should call the analytics service", () => {
+        expect(analyticsService.value).toHaveBeenCalledWith({
+          action: "get",
+          userId: userQueryParam.value,
+        });
+      });
+    });
+  });
+
+### Factory Refinement (self-referencing)
+
+  const userFactory = given(() => Factory.define<User>(({ sequence }) => ({
+    id: sequence,
+    name: faker.person.fullName()
+  })));
+
+  const initialUsers = given(() => userFactory.value.buildList(3));
+
+  describe("given users have the admin role", () => {
+    userFactory.define(() => userFactory.value.params({ roles: ["admin"] }));
+
+    it("should mark returned user as admins", async () => {
+      const user = await userService.value.getUser(initialUsers.value[0].id);
+      expect(user.admin).toBeTruthy();
+    });
+  });
+
+### Cache "All" for Integration Tests
+
+  describe("a user repository", () => {
+    const user = given("a user", () => ({
+      id: Math.random(),
+      name: "John Doe",
+      email: "john.doe@example.com",
+    }), { cache: "All" });
+
+    const repository = given("a user repository", async (cleanup) => {
+      const repo = await userRepository.connect();
+      cleanup(() => repo.disconnect());
+      return repo;
+    }, { cache: "All" });
+
+    const userAddedToRepository = given("a user added to the repository",
+      async (cleanup) => {
+        const u = user.value;
+        const repo = await repository.value;
+        await repo.addUser(u);
+        cleanup(() => repo.deleteUser(u.id));
+      },
+      { cache: "All" },
+    );
+
+    describe("when the user is requested by id", () => {
+      const userByIdResponse = given(async () => {
+        await userAddedToRepository.value;
+        const repo = await repository.value;
+        return repo.getUserById(user.value.id);
+      }, { cache: "All" });
+
+      it("should return the user", async () => {
+        expect(await userByIdResponse.value).toEqual(user.value);
+      });
+    });
+
+    describe("when the user is requested by email", () => {
+      const userByEmailResponse = given(async () => {
+        await userAddedToRepository.value;
+        const repo = await repository.value;
+        return repo.getUserByEmail(user.value.email);
+      }, { cache: "All" });
+
+      it("should return the user", async () => {
+        expect(await userByEmailResponse.value).toEqual(user.value);
+      });
+    });
+  });
+
+---
+
+## Framework-Specific Setup
+
+### Jest
+
+  npm install --save-dev @given3/jest
+
+  import { given, cleanup, createGivenConstructor } from "@given3/jest";
+  import { describe, it, expect } from "@jest/globals";
+
+The adapter imports beforeAll, beforeEach, afterEach, afterAll from @jest/globals.
+
+### Vitest
+
+  npm install --save-dev @given3/vitest
+
+  import { given, cleanup, createGivenConstructor } from "@given3/vitest";
+  import { describe, it, expect } from "vitest";
+
+The adapter imports lifecycle hooks from "vitest".
+
+### Mocha
+
+  npm install --save-dev @given3/mocha
+
+  import { given, cleanup, createGivenConstructor } from "@given3/mocha";
+
+The adapter imports beforeEach, afterEach from "mocha" and maps `before` to
+beforeAll and `after` to afterAll.
+
+### Node Test Runner
+
+  npm install --save-dev @given3/node
+
+  import { given, cleanup, createGivenConstructor } from "@given3/node";
+  import { describe, it } from "node:test";
+
+The adapter imports lifecycle hooks from "node:test" and maps `before` to
+beforeAll and `after` to afterAll.
+
+### Bun
+
+  npm install --save-dev @given3/bun
+
+  import { given, cleanup, createGivenConstructor } from "@given3/bun";
+  import { describe, it, expect } from "bun:test";
+
+The adapter imports lifecycle hooks from "bun:test".
+
+### Deno
+
+Import via deno.json:
+
+  {
+    "imports": {
+      "@given3/core": "npm:@given3/core@^2.1.0",
+      "@std/testing": "jsr:@std/testing@^1"
+    }
+  }
+
+  import { given, cleanup, createGivenConstructor } from "@given3/deno";
+  import { describe, it } from "@std/testing/bdd";
+  import { expect } from "@std/expect";
+
+The Deno adapter imports lifecycle hooks from "@std/testing/bdd". It uses mod.ts
+as its entry point (Deno convention) rather than src/index.mts.
+
+---
+
+## Middleware API
+
+Use `createGivenConstructor` to apply middleware:
+
+  import { createGivenConstructor, Given } from "@given3/vitest";
+
+  function loggingMiddleware<T>(given: Given<T>): Given<T> {
+    // wrap or decorate the Given instance
+    return given;
+  }
+
+  const given = createGivenConstructor(loggingMiddleware);
+
+Middleware receives a `Given<T>` and returns a (possibly wrapped) `Given<T>`.
+Multiple middleware are applied in order.
+
+---
+
+## Architecture Overview
+
+### Core Design
+
+Given3 uses a frame stack architecture. Each Given instance maintains a stack of
+Frames. When `.define()` is called (typically in a describe block), a new frame
+is pushed onto the stack. When the describe block exits, the frame is popped.
+
+Frame types:
+- EmptyFrame — default, throws NoDefinitionError on access
+- DefineFrame — holds a definition, supports cleanup, no caching
+- SmartCacheFrame — extends DefineFrame with dependency-tracking cache
+
+### AsyncLocalStorage
+
+Given3 uses Node.js AsyncLocalStorage for two purposes:
+1. Tracking which Givens are accessed during definition execution (dependency
+   tracking for smart cache invalidation).
+2. Propagating the cleanup registration function so that the standalone `cleanup()`
+   export works inside definitions.
+
+### Lifecycle Integration
+
+Each adapter provides TestHooks (beforeAll, beforeEach, afterEach, afterAll) from
+its framework. The core library uses these to:
+- Push/pop frames (beforeAll/afterAll)
+- Release cached values (afterEach for "Each" mode, afterAll for "All" mode)
+- Run registered cleanup functions on release
+
+### Self-Referencing
+
+When a definition accesses `this.value` or the same Given's `.value`, the frame
+stack resolves it to the previous frame's value. This enables refinement patterns
+where a nested describe overrides a Given while still referencing the parent value.

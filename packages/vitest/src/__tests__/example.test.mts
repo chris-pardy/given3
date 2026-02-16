@@ -1,7 +1,7 @@
 import { given, cleanup } from "../index.mjs";
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "vitest";
 
-describe("given3 jest integration", () => {
+describe("given3 vitest integration", () => {
   describe("basic lazy values", () => {
     const name = given(() => "John");
     const age = given(() => 30);

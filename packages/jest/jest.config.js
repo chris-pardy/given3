@@ -1,14 +1,20 @@
 export default {
-  preset: "ts-jest",
+  preset: "ts-jest/presets/default-esm",
   testMatch: ["**/__tests__/*.test.mts"],
   testEnvironment: "node",
+  extensionsToTreatAsEsm: [".mts"],
   transform: {
-    "^.+\\.mts$": "ts-jest",
+    "^.+\\.mts$": [
+      "ts-jest",
+      {
+        useESM: true,
+        isolatedModules: true,
+      },
+    ],
   },
   moduleFileExtensions: ["js", "mts"],
-  globals: {
-    "ts-jest": {
-      isolatedModules: true,
-    },
+  transformIgnorePatterns: ["node_modules/(?!@given3/)"],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.mjs$": "$1.mts",
   },
 };

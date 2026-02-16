@@ -1,0 +1,15 @@
+{
+  "name": "@given3/deno",
+  "version": "2.1.0",
+  "license": "MIT",
+  "exports": "./mod.ts",
+  "imports": {
+    "@given3/core": "npm:@given3/core@^2.1.0",
+    "@std/testing": "jsr:@std/testing@^1",
+    "@std/expect": "jsr:@std/expect@^1"
+  },
+  "tasks": {
+    "test": "deno test",
+    "check": "deno check mod.ts"
+  }
+}

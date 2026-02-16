@@ -31,7 +31,8 @@
     "test": "vitest --no-watch",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "publish": "npm publish --access public"
   },
   "devDependencies": {
     "vitest": "^3.0.9",
